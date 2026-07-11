@@ -1,0 +1,64 @@
+# ===== 機密情報・環境変数 =====
+.env
+.env.*
+!.env.example
+*.env
+
+# Spring Boot 本番設定（環境変数は application.yml の ${VAR} 参照で管理）
+application-prod.yml
+application-production.yml
+
+# AWS 認証情報
+.aws/
+
+# ===== Java / Maven =====
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
+.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
+# ===== Node.js / Next.js =====
+node_modules/
+.next/
+out/
+dist/
+.npm
+.yarn-integrity
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===== IDE =====
+.idea/
+*.iml
+*.iws
+.vscode/
+*.suo
+*.user
+.classpath
+.project
+.settings/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== テスト・カバレッジ =====
+coverage/
+*.lcov
+.nyc_output/
+
+# ===== ログ =====
+logs/
+*.log
+
+# ===== draw.io バックアップ =====
+*.drawio.bkp

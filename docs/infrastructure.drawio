@@ -1,0 +1,129 @@
+<mxfile host="65bd71144e">
+    <diagram name="AWS Infrastructure" id="sns-aws-infra">
+        <mxGraphModel dx="1649" dy="983" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="TextSNS - AWS インフラ構成図" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="527" y="20" width="600" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="internet" value="インターネット" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="677" y="80" width="200" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="route53" value="Amazon Route 53&#xa;DNS" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.route_53;labelBackgroundColor=#ffffff;sketch=0;fontStyle=1;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="727" y="220" width="60" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="route53-label" value="Route 53" style="text;html=1;align=center;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="712" y="285" width="90" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="alb" value="Application Load Balancer&#xa;HTTP:80 → HTTPS:443" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.application_load_balancer;labelBackgroundColor=#ffffff;sketch=0;fontStyle=1;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="727" y="340" width="60" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="alb-label" value="ALB" style="text;html=1;align=center;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="712" y="405" width="90" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="vpc" value="VPC (10.0.0.0/16)" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];shape=mxgraph.cisco.sites.generic_building;html=1;dashed=1;strokeColor=#0e7ac4;fillColor=none;strokeWidth=2;fontSize=13;fontStyle=1;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="450" width="960" height="480" as="geometry"/>
+                </mxCell>
+                <mxCell id="vpc-label" value="VPC (10.0.0.0/16)" style="text;html=1;align=left;fontSize=13;fontStyle=1;fontColor=#0e7ac4;" parent="1" vertex="1">
+                    <mxGeometry x="310" y="455" width="200" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="public-subnet" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;dashed=1;strokeWidth=2;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="340" y="490" width="400" height="390" as="geometry"/>
+                </mxCell>
+                <mxCell id="public-subnet-label" value="Public Subnet (10.0.1.0/24)&#xa;Availability Zone A" style="text;html=1;align=center;fontSize=11;fontStyle=1;fontColor=#2d6a2d;" parent="1" vertex="1">
+                    <mxGeometry x="340" y="493" width="400" height="35" as="geometry"/>
+                </mxCell>
+                <mxCell id="ec2" value="Amazon EC2&#xa;t3.small&#xa;&#xa;・Spring Boot 3.x (Port 8080)&#xa;・React build 配信 (Nginx)&#xa;&#xa;Security Group:&#xa;  Inbound: 80, 443 (ALB から)&#xa;  Outbound: 3306 (RDS), 443 (S3)" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.ec2;labelBackgroundColor=#ffffff;sketch=0;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="540" width="60" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="ec2-box" value="Amazon EC2 (t3.small)&#xa;Spring Boot 3.x  |  Port 8080&#xa;React build (Nginx)&#xa;&#xa;Security Group&#xa;Inbound : 80, 443 (from ALB)&#xa;Outbound: 3306 (to RDS), 443 (S3)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;align=left;spacingLeft=10;" parent="1" vertex="1">
+                    <mxGeometry x="390" y="654" width="310" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="ec2-icon" value="" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.ec2;fillColor=#ED7100;strokeColor=#ffffff;sketch=0;" parent="1" vertex="1">
+                    <mxGeometry x="359" y="638" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="iam" value="" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.role;fillColor=#BF0816;strokeColor=#ffffff;sketch=0;" parent="1" vertex="1">
+                    <mxGeometry x="395" y="801" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="iam-label" value="IAM Role&#xa;EC2 → S3 アクセス許可" style="text;html=1;align=left;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="445" y="805" width="220" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="private-subnet" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;dashed=1;strokeWidth=2;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="490" width="450" height="390" as="geometry"/>
+                </mxCell>
+                <mxCell id="private-subnet-label" value="Private Subnet (10.0.2.0/24)&#xa;Availability Zone A / B (Multi-AZ)" style="text;html=1;align=center;fontSize=11;fontStyle=1;fontColor=#7d4c00;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="493" width="450" height="35" as="geometry"/>
+                </mxCell>
+                <mxCell id="rds-primary" value="" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.rds;fillColor=#2E73B8;strokeColor=#ffffff;sketch=0;" parent="1" vertex="1">
+                    <mxGeometry x="830" y="560" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="rds-primary-box" value="Amazon RDS (MySQL 8.0)&#xa;db.t3.micro — Primary&#xa;&#xa;Security Group&#xa;Inbound: 3306 (from EC2 SG のみ)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontSize=11;align=left;spacingLeft=10;" parent="1" vertex="1">
+                    <mxGeometry x="820" y="555" width="360" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="rds-standby" value="" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.rds;fillColor=#2E73B8;strokeColor=#ffffff;sketch=0;" parent="1" vertex="1">
+                    <mxGeometry x="830" y="680" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="rds-standby-box" value="Amazon RDS (MySQL 8.0)&#xa;db.t3.micro — Standby (Multi-AZ)&#xa;&#xa;自動フェイルオーバー対応" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;align=left;spacingLeft=10;" parent="1" vertex="1">
+                    <mxGeometry x="820" y="675" width="360" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="s3-box" value="Amazon S3&#xa;sns-app-images (Standard)&#xa;&#xa;・投稿画像 (posts/)&#xa;・アバター画像 (avatars/)&#xa;パブリックアクセスブロック ON&#xa;署名付き URL でアクセス" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#3F8624;fontSize=11;align=left;spacingLeft=10;" parent="1" vertex="1">
+                    <mxGeometry x="394" y="1050" width="216" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="s3-icon" value="" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;fillColor=#3F8624;strokeColor=#ffffff;sketch=0;" parent="1" vertex="1">
+                    <mxGeometry x="361" y="1027" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" parent="1" source="internet" target="route53" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;" parent="1" source="route53" target="alb" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#82b366;" parent="1" source="alb" target="ec2-box" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#d6b656;" parent="1" source="ec2-box" target="rds-primary-box" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="700" y="610"/>
+                            <mxPoint x="700" y="600"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#d6b656;dashed=1;" parent="1" source="rds-primary-box" target="rds-standby-box" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e5-label" value="同期レプリケーション" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" parent="e5" vertex="1" connectable="0">
+                    <mxGeometry x="-0.1" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#3F8624;" parent="1" source="ec2-box" target="s3-box" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="545" y="675"/>
+                            <mxPoint x="545" y="1030"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e6-label" value="画像アップロード (HTTPS)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" parent="e6" vertex="1" connectable="0">
+                    <mxGeometry x="-0.2" relative="1" as="geometry">
+                        <mxPoint y="49" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="legend" value="凡例" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="500" width="200" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="leg1" value="Public Subnet" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="540" width="150" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="leg2" value="Private Subnet" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="580" width="150" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="leg3" value="S3 (VPC 外)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#3F8624;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="620" width="150" height="30" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
