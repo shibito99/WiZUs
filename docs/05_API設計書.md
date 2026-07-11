@@ -1,6 +1,6 @@
 # API 設計書
 
-**プロジェクト:** TextSNS
+**プロジェクト:** WiZUs
 **作成日:** 2026-07-11
 **ベース URL:** `http://localhost:8080`（開発）/ `https://api.textsns.example.com`（本番）
 
