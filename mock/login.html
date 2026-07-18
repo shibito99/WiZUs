@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ログイン — WiZUs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+
+<div class="auth-wrapper bg-gray-50">
+  <div class="w-full max-w-sm">
+    <!-- Logo -->
+    <h1 class="text-center text-4xl font-extrabold mb-8" style="color:#1d9bf0">WiZUs</h1>
+
+    <div class="card p-8 shadow-sm">
+      <h2 class="text-xl font-bold mb-6">ログイン</h2>
+
+      <div id="error-banner" class="error-msg mb-4 hidden"></div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">メールアドレス</label>
+          <input id="email" type="email" placeholder="you@example.com"
+            class="form-input w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm"
+            onkeydown="if(event.key==='Enter')login()">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">パスワード</label>
+          <input id="password" type="password" placeholder="パスワードを入力"
+            class="form-input w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm"
+            onkeydown="if(event.key==='Enter')login()">
+        </div>
+        <button onclick="login()" class="btn-primary w-full py-2.5 text-sm mt-2">ログイン</button>
+      </div>
+
+      <p class="mt-6 text-center text-sm text-gray-500">
+        アカウントをお持ちでない方は
+        <a href="register.html" class="font-semibold hover:underline" style="color:#1d9bf0">新規登録</a>
+      </p>
+
+      <!-- Demo hint -->
+      <div class="mt-6 bg-blue-50 rounded-xl p-3 text-xs text-blue-700">
+        <p class="font-semibold mb-1">デモ用アカウント</p>
+        <p>メール: alice@example.com</p>
+        <p>パスワード: password123</p>
+        <button onclick="fillDemo()" class="mt-2 text-blue-600 font-semibold underline">自動入力</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Already logged in → redirect
+  if (getCurrentUserId()) window.location.href = 'index.html';
+
+  function login() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const banner = document.getElementById('error-banner');
+    banner.classList.add('hidden');
+
+    if (!email || !password) {
+      banner.textContent = 'メールアドレスとパスワードを入力してください。';
+      banner.classList.remove('hidden');
+      return;
+    }
+    const user = getUsers().find(u => u.email === email && u.password === password);
+    if (!user) {
+      banner.textContent = 'メールアドレスまたはパスワードが正しくありません。';
+      banner.classList.remove('hidden');
+      return;
+    }
+    sessionStorage.setItem('wizus_current_user_id', String(user.id));
+    window.location.href = 'index.html';
+  }
+
+  function fillDemo() {
+    document.getElementById('email').value = 'alice@example.com';
+    document.getElementById('password').value = 'password123';
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+/* WiZUs Mockup — custom styles (Tailwind CDN handles utilities) */
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f7f9fa;
+  color: #0f1419;
+  margin: 0;
+}
+
+/* Auth pages centering */
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* Form input focus ring */
+.form-input:focus {
+  outline: none;
+  border-color: #1d9bf0;
+  box-shadow: 0 0 0 2px rgba(29,155,240,0.15);
+}
+
+/* Card */
+.card {
+  background: #fff;
+  border: 1px solid #e7e7e7;
+  border-radius: 16px;
+}
+
+/* Primary button */
+.btn-primary {
+  background: #1d9bf0;
+  color: #fff;
+  border: none;
+  border-radius: 9999px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-primary:hover { background: #1a8cd8; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Outline button */
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid #1d9bf0;
+  color: #1d9bf0;
+  border-radius: 9999px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-outline:hover { background: rgba(29,155,240,0.08); }
+
+/* Error banner */
+.error-msg {
+  background: #fff0f0;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+/* Main layout: centered column */
+.main-col {
+  max-width: 600px;
+  margin: 0 auto;
+  background: #fff;
+  min-height: 100vh;
+  border-left: 1px solid #e7e7e7;
+  border-right: 1px solid #e7e7e7;
+}
+
+/* Char counter */
+.char-count { color: #6b7280; font-size: 0.75rem; }
+.char-count.warn { color: #ef4444; }
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.2s infinite;
+  border-radius: 4px;
+}
+
+/* Modal animation */
+#comment-modal-overlay { animation: fadeIn 0.15s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Profile cover placeholder */
+.profile-cover {
+  height: 130px;
+  background: linear-gradient(135deg, #1d9bf0 0%, #794bc4 100%);
+}
+
+/* Image preview */
+#image-preview {
+  max-height: 200px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+/* Textarea resize lock */
+textarea.post-textarea {
+  resize: none;
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  min-height: 120px;
+}
+
+/* Scrollbar thin */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 3px; }

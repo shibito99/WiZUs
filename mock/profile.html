@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>プロフィール — WiZUs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50">
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+
+<div id="navbar"></div>
+
+<div class="main-col">
+  <!-- Back bar -->
+  <div class="px-4 py-3 border-b border-gray-100 flex items-center gap-3 sticky top-14 bg-white z-30">
+    <a href="index.html" class="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+    </a>
+    <h1 id="page-title" class="font-bold text-lg flex-1">プロフィール</h1>
+  </div>
+
+  <!-- Cover -->
+  <div class="profile-cover"></div>
+
+  <!-- Avatar + action buttons -->
+  <div class="px-4 relative">
+    <div id="profile-avatar" class="absolute -top-6 border-4 border-white rounded-full"></div>
+    <div class="pt-10 flex justify-end gap-2" id="action-buttons"></div>
+  </div>
+
+  <!-- User info -->
+  <div class="px-4 pb-4 border-b border-gray-100">
+    <h2 id="profile-username" class="font-bold text-xl mt-1"></h2>
+    <p id="profile-bio" class="text-gray-600 text-sm mt-1"></p>
+    <div class="flex gap-4 mt-3 text-sm">
+      <a id="following-link" href="#" class="hover:underline">
+        <span id="following-count" class="font-bold"></span>
+        <span class="text-gray-500"> フォロー中</span>
+      </a>
+      <a id="followers-link" href="#" class="hover:underline">
+        <span id="followers-count" class="font-bold"></span>
+        <span class="text-gray-500"> フォロワー</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Edit profile form (hidden by default) -->
+  <div id="edit-form" class="hidden px-4 py-4 border-b border-gray-100 bg-blue-50 space-y-3">
+    <h3 class="font-semibold text-sm text-gray-700">プロフィールを編集</h3>
+    <div>
+      <label class="block text-xs text-gray-500 mb-1">自己紹介 (最大160文字)</label>
+      <textarea id="edit-bio" maxlength="160" rows="3"
+        class="form-input w-full border border-gray-300 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:border-blue-400"></textarea>
+    </div>
+    <div>
+      <label class="block text-xs text-gray-500 mb-1">アバター画像</label>
+      <input type="file" id="avatar-input" accept="image/*" onchange="onAvatarSelect(event)" class="text-xs">
+    </div>
+    <div class="flex gap-2">
+      <button onclick="saveProfile()" class="btn-primary text-sm px-4 py-1.5">保存する</button>
+      <button onclick="cancelEdit()" class="btn-outline text-sm px-4 py-1.5">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- Posts -->
+  <div class="px-0 py-2 border-b border-gray-100">
+    <p class="px-4 font-semibold text-sm text-gray-700 pb-2">投稿</p>
+  </div>
+  <div id="user-posts"></div>
+  <div id="no-posts" class="hidden py-12 text-center text-gray-400 text-sm">まだ投稿はありません</div>
+</div>
+
+<script>
+  if (!requireAuth()) throw new Error('not authenticated');
+  renderNavbar();
+
+  const cu = getCurrentUser();
+  const params = new URLSearchParams(window.location.search);
+  const targetId = parseInt(params.get('id')) || cu.id;
+  let targetUser = getUser(targetId);
+  if (!targetUser) { document.body.innerHTML = '<p class="p-8 text-center text-gray-500">ユーザーが見つかりません</p>'; throw new Error('user not found'); }
+
+  let pendingAvatar = null;
+
+  function render() {
+    targetUser = getUser(targetId); // refresh
+    const isSelf = cu.id === targetId;
+
+    // Avatar
+    document.getElementById('profile-avatar').innerHTML = avatarHTML(targetUser, 72);
+
+    // Info
+    document.getElementById('page-title').textContent = targetUser.username;
+    document.getElementById('profile-username').textContent = '@' + targetUser.username;
+    document.getElementById('profile-bio').textContent = targetUser.bio || '';
+    document.getElementById('following-count').textContent = followingCount(targetId);
+    document.getElementById('followers-count').textContent = followerCount(targetId);
+    document.getElementById('following-link').href = `follow-list.html?type=following&id=${targetId}`;
+    document.getElementById('followers-link').href = `follow-list.html?type=followers&id=${targetId}`;
+
+    // Action buttons
+    const actionArea = document.getElementById('action-buttons');
+    if (isSelf) {
+      actionArea.innerHTML = `<button onclick="toggleEditForm()" class="btn-outline text-sm px-4 py-1.5">プロフィールを編集</button>`;
+    } else {
+      const following = isFollowing(cu.id, targetId);
+      actionArea.innerHTML = `<button id="follow-btn" onclick="handleFollowProfile()" class="text-sm font-semibold px-5 py-1.5 rounded-full border transition ${following ? 'bg-white border-gray-300 text-gray-700 hover:border-red-300 hover:text-red-500' : 'text-white border-transparent'}" style="${following ? '' : 'background:#1d9bf0'}">${following ? 'フォロー中' : 'フォロー'}</button>`;
+    }
+
+    // Posts
+    const posts = getPosts().filter(p => p.user_id === targetId).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const postsEl = document.getElementById('user-posts');
+    if (posts.length === 0) {
+      document.getElementById('no-posts').classList.remove('hidden');
+      postsEl.innerHTML = '';
+    } else {
+      document.getElementById('no-posts').classList.add('hidden');
+      postsEl.innerHTML = posts.map(renderPostCard).join('');
+    }
+  }
+
+  function handleFollowProfile() {
+    const nowFollowing = toggleFollow(cu.id, targetId);
+    const btn = document.getElementById('follow-btn');
+    btn.textContent = nowFollowing ? 'フォロー中' : 'フォロー';
+    if (nowFollowing) {
+      btn.style.background = '';
+      btn.className = 'text-sm font-semibold px-5 py-1.5 rounded-full border transition bg-white border-gray-300 text-gray-700 hover:border-red-300 hover:text-red-500';
+    } else {
+      btn.style.background = '#1d9bf0';
+      btn.className = 'text-sm font-semibold px-5 py-1.5 rounded-full border transition text-white border-transparent';
+    }
+    document.getElementById('following-count').textContent = followingCount(targetId);
+    document.getElementById('followers-count').textContent = followerCount(targetId);
+  }
+
+  function toggleEditForm() {
+    const form = document.getElementById('edit-form');
+    const hidden = form.classList.toggle('hidden');
+    if (!hidden) {
+      document.getElementById('edit-bio').value = targetUser.bio || '';
+    }
+  }
+  function cancelEdit() {
+    document.getElementById('edit-form').classList.add('hidden');
+    pendingAvatar = null;
+  }
+
+  function onAvatarSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => { pendingAvatar = ev.target.result; };
+    reader.readAsDataURL(file);
+  }
+
+  function saveProfile() {
+    const bio = document.getElementById('edit-bio').value.trim();
+    const users = getUsers();
+    const idx = users.findIndex(u => u.id === cu.id);
+    if (idx === -1) return;
+    users[idx].bio = bio;
+    if (pendingAvatar) users[idx].avatar_url = pendingAvatar;
+    saveUsers(users);
+    pendingAvatar = null;
+    document.getElementById('edit-form').classList.add('hidden');
+    render();
+  }
+
+  render();
+</script>
+</body>
+</html>
