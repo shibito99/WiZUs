@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ユーザー検索 — WiZUs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50">
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+
+<div id="navbar"></div>
+
+<div class="main-col">
+  <!-- Search header -->
+  <div class="px-4 py-3 border-b border-gray-100 sticky top-14 bg-white z-30">
+    <h1 class="font-bold text-lg mb-2">検索</h1>
+    <div class="relative">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+      <input id="search-input" type="text" placeholder="ユーザー名で検索..."
+        class="form-input w-full border border-gray-200 rounded-full pl-9 pr-4 py-2.5 text-sm bg-gray-50 focus:bg-white"
+        oninput="onSearch()">
+    </div>
+  </div>
+
+  <!-- Search results (shown when query present) -->
+  <div id="search-results-section" class="hidden">
+    <p class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wide">検索結果</p>
+    <div id="search-results"></div>
+    <div id="no-results" class="hidden py-8 text-center text-gray-400 text-sm">見つかりませんでした</div>
+  </div>
+
+  <!-- Suggestions (shown when no query) -->
+  <div id="suggestions-section">
+    <p class="px-4 py-3 font-semibold text-base border-b border-gray-100">知り合いかも？</p>
+    <div id="suggestions-list"></div>
+    <div id="no-suggestions" class="hidden py-8 text-center text-gray-400 text-sm">全員フォロー済みです 🎉</div>
+  </div>
+</div>
+
+<script>
+  if (!requireAuth()) throw new Error('not authenticated');
+  renderNavbar();
+
+  const cu = getCurrentUser();
+
+  function getSuggestions() {
+    const follows = getFollows();
+    const myFollowingIds = new Set(follows.filter(f => f.follower_id === cu.id).map(f => f.followee_id));
+    myFollowingIds.add(cu.id);
+
+    const myFollowingArr = [...myFollowingIds].filter(id => id !== cu.id);
+    let suggestions = [];
+
+    // Users followed by people I follow (2nd-degree connections), not already followed
+    const secondDegree = new Map();
+    for (const fId of myFollowingArr) {
+      const theirFollowing = follows.filter(f => f.follower_id === fId).map(f => f.followee_id);
+      for (const uid of theirFollowing) {
+        if (!myFollowingIds.has(uid)) {
+          secondDegree.set(uid, (secondDegree.get(uid) || 0) + 1);
+        }
+      }
+    }
+    suggestions = [...secondDegree.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => getUser(id)).filter(Boolean);
+
+    // Fallback: top users by follower count
+    if (suggestions.length < 5) {
+      const allUsers = getUsers().filter(u => !myFollowingIds.has(u.id));
+      allUsers.sort((a, b) => followerCount(b.id) - followerCount(a.id));
+      for (const u of allUsers) {
+        if (!suggestions.find(s => s.id === u.id)) suggestions.push(u);
+        if (suggestions.length >= 10) break;
+      }
+    }
+    return suggestions.slice(0, 10);
+  }
+
+  function renderSuggestions() {
+    const sug = getSuggestions();
+    const list = document.getElementById('suggestions-list');
+    if (sug.length === 0) {
+      document.getElementById('no-suggestions').classList.remove('hidden');
+      list.innerHTML = '';
+    } else {
+      document.getElementById('no-suggestions').classList.add('hidden');
+      list.innerHTML = sug.map(u => renderSuggestionCard(u)).join('');
+    }
+  }
+
+  function renderSuggestionCard(user) {
+    const following = isFollowing(cu.id, user.id);
+    return `
+      <div id="sug-${user.id}" class="flex items-center gap-3 px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition">
+        <a href="profile.html?id=${user.id}" class="flex-shrink-0">${avatarHTML(user, 44)}</a>
+        <div class="flex-1 min-w-0">
+          <a href="profile.html?id=${user.id}" class="font-bold text-sm hover:underline block">${escHtml(user.username)}</a>
+          ${user.bio ? `<p class="text-xs text-gray-500 truncate">${escHtml(user.bio)}</p>` : ''}
+          <p class="text-xs text-gray-400 mt-0.5">${followerCount(user.id)} フォロワー</p>
+        </div>
+        <button onclick="handleSugFollow(${user.id}, this)" class="flex-shrink-0 text-sm font-semibold px-4 py-1.5 rounded-full border transition ${following ? 'bg-white border-gray-300 text-gray-700' : 'text-white border-transparent'}" style="${following ? '' : 'background:#1d9bf0'}" data-following="${following}">
+          ${following ? 'フォロー中' : 'フォロー'}
+        </button>
+      </div>`;
+  }
+
+  function handleSugFollow(targetId, btn) {
+    const nowFollowing = toggleFollow(cu.id, targetId);
+    if (nowFollowing) {
+      btn.textContent = 'フォロー中';
+      btn.style.background = '';
+      btn.className = 'flex-shrink-0 text-sm font-semibold px-4 py-1.5 rounded-full border transition bg-white border-gray-300 text-gray-700';
+    } else {
+      // removed from list when unfollowed from suggestions
+      btn.textContent = 'フォロー';
+      btn.style.background = '#1d9bf0';
+      btn.className = 'flex-shrink-0 text-sm font-semibold px-4 py-1.5 rounded-full border transition text-white border-transparent';
+      // refresh suggestions so newly followed disappear
+      renderSuggestions();
+    }
+  }
+
+  function onSearch() {
+    const q = document.getElementById('search-input').value.trim().toLowerCase();
+    const sugSection = document.getElementById('suggestions-section');
+    const resSection = document.getElementById('search-results-section');
+
+    if (!q) {
+      resSection.classList.add('hidden');
+      sugSection.classList.remove('hidden');
+      return;
+    }
+    sugSection.classList.add('hidden');
+    resSection.classList.remove('hidden');
+
+    const results = getUsers().filter(u => u.id !== cu.id && u.username.toLowerCase().includes(q));
+    const container = document.getElementById('search-results');
+    const noResults = document.getElementById('no-results');
+    if (results.length === 0) {
+      container.innerHTML = '';
+      noResults.classList.remove('hidden');
+    } else {
+      noResults.classList.add('hidden');
+      container.innerHTML = results.map(renderUserCard).join('');
+    }
+  }
+
+  renderSuggestions();
+</script>
+</body>
+</html>

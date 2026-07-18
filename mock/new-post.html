@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>投稿する — WiZUs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50">
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+
+<div id="navbar"></div>
+
+<div class="main-col">
+  <div class="px-4 py-3 border-b border-gray-100 flex items-center gap-3 sticky top-14 bg-white z-30">
+    <a href="index.html" class="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+    </a>
+    <h1 class="font-bold text-lg flex-1">新しい投稿</h1>
+    <button id="submit-btn" onclick="submitPost()" class="btn-primary px-5 py-1.5 text-sm" disabled>投稿する</button>
+  </div>
+
+  <div class="px-4 py-4 bg-white">
+    <div class="flex gap-3">
+      <div id="avatar-area" class="flex-shrink-0"></div>
+      <div class="flex-1">
+        <textarea id="content" class="post-textarea text-gray-900 placeholder-gray-400"
+          placeholder="いまどうしてる？" maxlength="280"
+          oninput="onInput()"></textarea>
+
+        <!-- Image preview -->
+        <div id="preview-wrapper" class="hidden mt-2 relative">
+          <img id="image-preview" src="" alt="プレビュー" class="rounded-xl max-h-64 w-full object-cover border border-gray-100">
+          <button onclick="removeImage()" class="absolute top-2 right-2 bg-black bg-opacity-60 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm hover:bg-opacity-80">&times;</button>
+        </div>
+
+        <!-- Divider + toolbar -->
+        <div class="border-t border-gray-100 mt-3 pt-3 flex items-center justify-between">
+          <label for="image-input" class="cursor-pointer text-blue-500 hover:bg-blue-50 p-2 rounded-full transition" title="画像を追加">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </label>
+          <input type="file" id="image-input" accept="image/*" class="hidden" onchange="onImageSelect(event)">
+          <div class="flex items-center gap-3">
+            <!-- Circular progress ring -->
+            <svg class="w-6 h-6 -rotate-90" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" fill="none" stroke="#e5e7eb" stroke-width="2.5"/>
+              <circle id="progress-ring" cx="12" cy="12" r="9" fill="none" stroke="#1d9bf0" stroke-width="2.5"
+                stroke-dasharray="56.5" stroke-dashoffset="56.5" stroke-linecap="round" class="transition-all duration-150"/>
+            </svg>
+            <span id="char-count" class="char-count">0 / 280</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  if (!requireAuth()) throw new Error('not authenticated');
+  renderNavbar();
+
+  const cu = getCurrentUser();
+  document.getElementById('avatar-area').innerHTML = avatarHTML(cu, 44);
+
+  let imageDataUrl = null;
+  const MAX = 280;
+  const CIRCUMFERENCE = 56.5;
+
+  function onInput() {
+    const len = document.getElementById('content').value.length;
+    const ring = document.getElementById('progress-ring');
+    const counter = document.getElementById('char-count');
+    const remaining = MAX - len;
+    const offset = CIRCUMFERENCE - (len / MAX) * CIRCUMFERENCE;
+    ring.style.strokeDashoffset = Math.max(0, offset);
+    ring.style.stroke = remaining <= 20 ? '#ef4444' : '#1d9bf0';
+    counter.textContent = `${len} / ${MAX}`;
+    counter.className = 'char-count' + (remaining <= 20 ? ' warn' : '');
+    document.getElementById('submit-btn').disabled = len === 0 || len > MAX;
+  }
+
+  function onImageSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { alert('画像は10MB以下にしてください。'); return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      imageDataUrl = ev.target.result;
+      document.getElementById('image-preview').src = imageDataUrl;
+      document.getElementById('preview-wrapper').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeImage() {
+    imageDataUrl = null;
+    document.getElementById('image-preview').src = '';
+    document.getElementById('preview-wrapper').classList.add('hidden');
+    document.getElementById('image-input').value = '';
+  }
+
+  function submitPost() {
+    const content = document.getElementById('content').value.trim();
+    if (!content) return;
+    const post = {
+      id: nextId('wizus_next_post_id'),
+      user_id: cu.id,
+      content,
+      image_url: imageDataUrl || null,
+      created_at: new Date().toISOString(),
+    };
+    const posts = getPosts();
+    posts.unshift(post);
+    savePosts(posts);
+    window.location.href = 'index.html';
+  }
+</script>
+</body>
+</html>

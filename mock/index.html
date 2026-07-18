@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>タイムライン — WiZUs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50">
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+
+<div id="navbar"></div>
+
+<div class="main-col">
+  <!-- Page header -->
+  <div class="px-4 py-3 border-b border-gray-100 sticky top-14 bg-white z-30">
+    <h1 class="font-bold text-lg">タイムライン</h1>
+  </div>
+
+  <!-- Quick post bar -->
+  <div id="quick-post" class="px-4 py-3 border-b border-gray-200 flex gap-3 items-start bg-white">
+    <div id="quick-avatar"></div>
+    <a href="new-post.html" class="flex-1 border border-gray-200 rounded-full px-4 py-2.5 text-sm text-gray-400 hover:bg-gray-50 cursor-pointer transition block">
+      いまどうしてる？
+    </a>
+    <a href="new-post.html" class="btn-primary text-sm px-4 py-2">投稿する</a>
+  </div>
+
+  <!-- Timeline feed -->
+  <div id="feed"></div>
+
+  <!-- Empty state -->
+  <div id="empty-state" class="hidden py-16 text-center">
+    <div class="text-5xl mb-4">👋</div>
+    <p class="text-gray-500 font-medium">フォローしているユーザーの投稿がここに表示されます</p>
+    <a href="search.html" class="inline-block mt-4 btn-primary px-6 py-2 text-sm">ユーザーを探す</a>
+  </div>
+</div>
+
+<script>
+  if (!requireAuth()) throw new Error('not authenticated');
+  renderNavbar();
+
+  const cu = getCurrentUser();
+  document.getElementById('quick-avatar').innerHTML = avatarHTML(cu, 40);
+
+  function renderFeed() {
+    const follows = getFollows();
+    const followingIds = new Set(follows.filter(f => f.follower_id === cu.id).map(f => f.followee_id));
+    followingIds.add(cu.id); // include own posts
+
+    const posts = getPosts()
+      .filter(p => followingIds.has(p.user_id))
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    const feed = document.getElementById('feed');
+    if (posts.length === 0) {
+      document.getElementById('empty-state').classList.remove('hidden');
+      feed.innerHTML = '';
+      return;
+    }
+    document.getElementById('empty-state').classList.add('hidden');
+    feed.innerHTML = posts.map(renderPostCard).join('');
+  }
+
+  renderFeed();
+</script>
+</body>
+</html>

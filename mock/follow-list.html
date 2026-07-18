@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>フォロー一覧 — WiZUs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50">
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+
+<div id="navbar"></div>
+
+<div class="main-col">
+  <!-- Back bar -->
+  <div class="px-4 py-3 border-b border-gray-100 flex items-center gap-3 sticky top-14 bg-white z-30">
+    <a id="back-link" href="#" class="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+    </a>
+    <div>
+      <h1 id="page-title" class="font-bold text-lg leading-tight"></h1>
+      <p id="page-subtitle" class="text-xs text-gray-400"></p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex border-b border-gray-100 bg-white sticky top-28 z-20">
+    <a id="tab-following" href="#" class="flex-1 text-center py-3 text-sm font-semibold border-b-2 transition">フォロー中</a>
+    <a id="tab-followers" href="#" class="flex-1 text-center py-3 text-sm font-semibold border-b-2 transition">フォロワー</a>
+  </div>
+
+  <!-- List -->
+  <div id="user-list"></div>
+  <div id="empty-msg" class="hidden py-12 text-center text-gray-400 text-sm"></div>
+</div>
+
+<script>
+  if (!requireAuth()) throw new Error('not authenticated');
+  renderNavbar();
+
+  const params = new URLSearchParams(window.location.search);
+  let type = params.get('type') || 'following'; // 'following' | 'followers'
+  const targetId = parseInt(params.get('id')) || getCurrentUserId();
+  const targetUser = getUser(targetId);
+
+  document.getElementById('back-link').href = `profile.html?id=${targetId}`;
+  document.getElementById('page-subtitle').textContent = targetUser ? '@' + targetUser.username : '';
+
+  function setTabs() {
+    const isFollowing = type === 'following';
+    const tF = document.getElementById('tab-following');
+    const tR = document.getElementById('tab-followers');
+    tF.style.borderColor = isFollowing ? '#1d9bf0' : 'transparent';
+    tF.style.color = isFollowing ? '#1d9bf0' : '#6b7280';
+    tR.style.borderColor = !isFollowing ? '#1d9bf0' : 'transparent';
+    tR.style.color = !isFollowing ? '#1d9bf0' : '#6b7280';
+    document.getElementById('page-title').textContent = isFollowing ? 'フォロー中' : 'フォロワー';
+    history.replaceState(null, '', `?type=${type}&id=${targetId}`);
+  }
+
+  function render() {
+    setTabs();
+    const follows = getFollows();
+    let ids;
+    if (type === 'following') {
+      ids = follows.filter(f => f.follower_id === targetId).map(f => f.followee_id);
+    } else {
+      ids = follows.filter(f => f.followee_id === targetId).map(f => f.follower_id);
+    }
+    const users = ids.map(id => getUser(id)).filter(Boolean);
+    const list = document.getElementById('user-list');
+    const empty = document.getElementById('empty-msg');
+    if (users.length === 0) {
+      list.innerHTML = '';
+      empty.textContent = type === 'following' ? 'まだフォローしているユーザーはいません' : 'まだフォロワーはいません';
+      empty.classList.remove('hidden');
+    } else {
+      empty.classList.add('hidden');
+      list.innerHTML = users.map(renderUserCard).join('');
+    }
+  }
+
+  document.getElementById('tab-following').addEventListener('click', (e) => { e.preventDefault(); type = 'following'; render(); });
+  document.getElementById('tab-followers').addEventListener('click', (e) => { e.preventDefault(); type = 'followers'; render(); });
+
+  render();
+</script>
+</body>
+</html>
