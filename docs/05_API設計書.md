@@ -32,6 +32,63 @@
 
 ---
 
+## 1-2. JWT 仕様
+
+### トークン仕様
+
+| 項目 | 値 |
+|------|----|
+| アルゴリズム | `HS256` |
+| 有効期限 | `24時間`（86400 秒） |
+| 保存場所（フロントエンド） | `localStorage`（キー: `wizus_token`） |
+| リフレッシュトークン | **なし**（期限切れ時は再ログイン） |
+
+### ペイロード（クレーム）
+
+```json
+{
+  "sub": "1",
+  "username": "alice",
+  "iat": 1720000000,
+  "exp": 1720086400
+}
+```
+
+| クレーム | 型 | 説明 |
+|----------|----|------|
+| `sub` | string | ユーザー ID（数値を文字列化） |
+| `username` | string | ユーザー名（表示用。DB 参照削減のための補助情報） |
+| `iat` | number | 発行時刻（Unix 秒） |
+| `exp` | number | 有効期限（Unix 秒、`iat + 86400`） |
+
+### 認証フロー
+
+```
+1. ログイン
+   POST /api/auth/login → { token, user }
+   → フロントエンド: localStorage.setItem('wizus_token', token)
+
+2. 認証が必要な API 呼び出し
+   → リクエストヘッダーに Authorization: Bearer <token> を付与
+
+3. ログアウト
+   → フロントエンド: localStorage.removeItem('wizus_token')
+   → サーバー側処理なし（ステートレス）
+
+4. トークン期限切れ（401 レスポンス受信時）
+   → フロントエンドがログイン画面へリダイレクト
+```
+
+### Spring Boot 実装方針
+
+- ライブラリ: `io.jsonwebtoken:jjwt-api:0.12.x`
+- 秘密鍵: 環境変数 `JWT_SECRET`（256 bit 以上のランダム文字列）
+- フィルター: `JwtAuthenticationFilter extends OncePerRequestFilter`
+  - `Authorization` ヘッダーを検証 → `SecurityContextHolder` にユーザー情報をセット
+- 認証不要エンドポイント: `POST /api/auth/**` のみ許可
+
+---
+
 ## 2. 認証 API
 
 ### POST `/api/auth/register` — ユーザー登録
